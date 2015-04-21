@@ -1,1 +1,3 @@
-export * from 'ember-image-drop-target/components/image-drop-target';
+import ImageDropTargetComponent from 'ember-image-drop-target/components/image-drop-target';
+
+export default ImageDropTargetComponent;
