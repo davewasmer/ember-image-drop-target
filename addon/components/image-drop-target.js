@@ -33,7 +33,7 @@ export default FileDropTargetComponent.extend({
    * Options to pass to the cropper jQuery plugin. Receives the selected File
    * object as the single argument.
    *
-   * @params {File} file - the selected File object
+   * @param {File} file - the selected File object
    */
   cropOptions() {
     return {
