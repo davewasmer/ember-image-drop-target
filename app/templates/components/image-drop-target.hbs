@@ -1,1 +1,9 @@
-{{yield url}}
+{{yield (hash
+  previewURL=previewURL
+  isDraggingOver=isDraggingOver
+  isDragging=isDragging
+  isDropped=isDropped
+  isGeneratingPreview=isGeneratingPreview
+  hasPreview=hasPreview
+  file=file
+  )}}

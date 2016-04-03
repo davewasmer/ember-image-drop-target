@@ -1,6 +1,8 @@
 import Ember from 'ember';
 import FileDropTargetComponent from 'ember-file-drop-target/components/file-drop-target';
 
+const { get, set } = Ember;
+
 export default FileDropTargetComponent.extend({
 
   ///////////////////////////
@@ -8,48 +10,29 @@ export default FileDropTargetComponent.extend({
   ///////////////////////////
 
   /**
-   * The URL of the image to display. Should most likely be the URL of the
-   * uploaded file, or the preview data URL received from the preview action.
+   * The File object of the selected image.
    *
-   * @type {String|null}
+   * @type {File|null}
    */
-  url: null,
+  // file: null,
 
   /**
-   * Allow the user to crop the image.
+ * The data URL of the selected image to preview.
+ *
+ * @type {String}
+   */
+  previewURL: null,
+
+  /**
+   * Should dropped images be read in and a data URL generated?
    *
    * @type {Boolean}
    */
-  allowCropping: false,
+  generatePreviews: true,
 
-  /**
-   * URL of an image to display if no file is selected, or null to disable
-   *
-   * @type {String|null}
-   */
-  fallback: null,
-
-  /**
-   * Options to pass to the cropper jQuery plugin. Receives the selected File
-   * object as the single argument.
-   *
-   * @param {File} file - the selected File object
-   */
-  cropOptions() {
-    return {
-      modal: true,
-      autoCrop: true,
-      autoCropArea: 1,
-      dragCrop: false,
-      movable: false,
-      resizable: false
-    };
-  },
-
-
-  ////////////////////////////////////
-  // file-drop-target configuration //
-  ////////////////////////////////////
+  ///////////////////////////////////////////////////////
+  // Configuration for the underlying file-drop-target //
+  ///////////////////////////////////////////////////////
 
   /**
    * Restrict to image mime types.
@@ -66,20 +49,19 @@ export default FileDropTargetComponent.extend({
    * Override the fileDropped hook supplied by file-drop-target to process the
    * image preview
    */
-  fileDropped(file) {
-    this.set('isLoading', true);
-    this.set('isLoaded', false);
+  fileWasDropped(file) {
+    this._super.apply(this, arguments);
+    if (get(this, 'generatePreviews')) {
+      set(this, 'isGeneratingPreview', true);
 
-    var reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (e) => {
-      this.sendAction('preview', e.target.result);
-      this.set('isLoading', false);
-      this.set('isLoaded', true);
-      if (this.get('crop')) {
-        this.cropImage();
-      }
-    };
+      let reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        set(this, 'previewURL', e.target.result);
+        set(this, 'isGeneratingPreview', false);
+        set(this, 'hasPreview', true);
+      };
+    }
   },
 
   ///////////////////
@@ -89,17 +71,7 @@ export default FileDropTargetComponent.extend({
   classNames: 'image-drop-target',
   classNameBindings: [ 'isLoading', 'isLoaded' ],
 
-  isLoading: false,
-  isLoaded: false,
-
-  cropImage() {
-    var $image = this.$('img');
-    var cropOptions = this.get('cropOptions');
-    $image.cropper(cropOptions);
-  },
-
-  imageUrl: Ember.computed('url', 'fallback', function() {
-    return this.get('url') || this.get('fallback') || '';
-  })
+  isGeneratingPreview: false,
+  hasPreview: false
 
 });
